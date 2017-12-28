@@ -14,7 +14,7 @@ Ornitholog
 To start using Ornitholog, you're going to have to [create a set of credentials](https://github.com/geofurb/Ornitholog#set-up-twitter-api-credentials) for using the Twitter API, save these to a file that Ornitholog can read, [define a `Job`](https://github.com/geofurb/Ornitholog#create-a-job) JSON file to tell Ornitholog what you want it to collect and how, and finally [run the collection](https://github.com/geofurb/Ornitholog#run-ornitholog) itself. This quick intro will walk you through those steps to make the first time easier.
 
 ### Set up Twitter API credentials:
-Go to [apps.twitter.com](https://apps.twitter.com), click `Create New App`
+Go to [apps.twitter.com](https://apps.twitter.com), and click `Create New App`
 1. Create a text file in `Ornitholog/creds`, I'll refer to this as your `<creds_file>`
 2. Give your application a unique name, copy this to `LINE 1` of your `<creds_file>`
 3. In the `Permissions` tab of your app, set the permissions to `Read-Only`; Ornitholog does not need write access.
@@ -23,7 +23,7 @@ Go to [apps.twitter.com](https://apps.twitter.com), click `Create New App`
 6. Under `Application Actions` in `Keys and Access Tokens`, click `Generate Consumer Key and Secret`
 7. In the `Keys and Access Tokens` tab, now copy the `Access Token` to `LINE 4` of your `<creds_file>`
 8. In the `Keys and Access Tokens` tab, now copy the `Access Token Secret` to `LINE 5` of your `<creds_file>`
-* Remember to edit your job to contain the name of your `<creds_file>`!
+* Remember to edit your `Job` to contain the name of your `<creds_file>`!
 
 
 **Note:** None of the keys or tokens should contain spaces or line-breaks.
@@ -135,4 +135,22 @@ In the Ornitholog terminal, you can type `status <job_name>` to check on a `Job`
 ## Required Libraries
 Ornitholog requires Python 3.6+ and the `rauth` library to run. If you don't have `rauth`, you can acquire it by running `python -m pip install rauth` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
 
+## Archive Format
+
+Ornitholog creates a separate directory for each job, and stores tweets in that directory. You will find two kinds of files in this directory: `index.arx` and `*.taj` files.
+
+### The Archive Index (ARX) File
+The Archive Index (ARX) file contains metadata for each TAJ file to efficiently keep track of what data is stored where. The benefits here are many-fold:
+* Tweets can be stored in individual chunks in case the archive grows too large for a single disk
+* Finished TAJ files can be compressed to save space, then decompressed later when you need to parse them
+* Chronological access to the entire archive can quickly be accomplished by navigating the ARX to find the appropriate TAJ before parsing tweets
+
+### Tweet Archive JSON (TAJ) files
+Ornitholog stores tweets as JSON-objects, one-per-line. There are two varieties of file:
+
+Finished archives are named 'tweets-' + uuid4 + '.taj', where uuid4 is a unique hexadecimal identifier. Ornitholog does not need to edit these files anymore, and you can safely gzip them for long-term storage, or move them to another disk. (Be sure to move a copy of the ARX with them so that you can keep track of their ordering!) *Tweets in a finished file are ordered new-to-old.*  
+
+Unfinished archives are named 'new-tweets-' + uuid4 + '.taj', where uuid4 is a unique hexadecimal identifier. You can't compress this file, since Ornitholog will need to scan it to update the ARX, and will eventually need to read the entire thing to create a finished file from it. *Tweets in the unfinished file are ordered old-to-new.*  
+
+The reason for different ordering conventions in finished and unfinished files is to streamline later functionality, where Ornitholog will allow you to use the REST API to build finished archives further backwards in time and the Streaming API to collect tweets forward in time. Inserting into a finished file to fill the gaps may eventually be included, and would necessitate inserting a double line-break into the file wherever collection is interrupted to indicate possible missing tweets. Note that since the GET/Search function of the REST API only searches for tweets up to a week old, this functionality will necessarily be of limited utility except in capturing a recent event.
 
