@@ -10,6 +10,16 @@ Ornitholog
   /src
 ```
 
+## Contents:
+* [Required Libraries](https://github.com/geofurb/Ornitholog#required-libraries)  
+* [Getting Started](https://github.com/geofurb/Ornitholog#getting-started)  
+* [Defining a Collection Job](https://github.com/geofurb/Ornitholog#defining-a-collection-job)  
+* [Using the Ornitholog terminal](https://github.com/geofurb/Ornitholog#using-the-ornitholog-terminal)  
+* [Archive Format](https://github.com/geofurb/Ornitholog#archive-format)  
+
+## Required Libraries
+Ornitholog requires Python 3.6+ and the `rauth` library to run. If you don't have `rauth`, you can acquire it by running `python -m pip install rauth` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
+
 ## Getting Started
 To start using Ornitholog, you're going to have to [create a set of credentials](https://github.com/geofurb/Ornitholog#set-up-twitter-api-credentials) for using the Twitter API, save these to a file that Ornitholog can read, [define a `Job`](https://github.com/geofurb/Ornitholog#create-a-job) JSON file to tell Ornitholog what you want it to collect and how, and finally [run the collection](https://github.com/geofurb/Ornitholog#run-ornitholog) itself. This quick intro will walk you through those steps to make the first time easier.
 
@@ -131,9 +141,6 @@ Once you've added your credentials to a file and created a `Job`, you're ready t
 
 ### Job States
 In the Ornitholog terminal, you can type `status <job_name>` to check on a `Job`. It's probably `RUNNING` if you started it, `NOT_ACTIVE` if you haven't done anything with it, or `STOPPED` if you issued the `stop <job_name>` command. You might catch it in a transitional state such as `ISSUED` or `STOPPING`, which respectively indicate that the job is still preparing to collect data or that it is still in the process of ending its collection. If your `Job` is in a transitional state for more than a few seconds, something is probably wrong.
-
-## Required Libraries
-Ornitholog requires Python 3.6+ and the `rauth` library to run. If you don't have `rauth`, you can acquire it by running `python -m pip install rauth` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
 
 ## Archive Format
 
