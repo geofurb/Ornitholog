@@ -23,13 +23,14 @@ Go to [https://apps.twitter.com], click `Create New App`
 * Remember to edit your job to contain the name of your <creds_file>!
 
 
-**Note:**
+**Note:**\n
 None of the keys or tokens should contain spaces or line-breaks!
 
 
 
 ## TO CREATE A JOB:
 A Job is a JSON file defining the parameters for a certain Twitter collection. Read the comments in src/run_job.py for full instructions on what you can do to define a job. For your convenience, a sample job has been included in Ornitholog/jobs/sample_job.json
+
 In the "credfile" field, add the filename of your <creds_file>. Ornitholog will look for this file in Ornitholog/creds/ when it tries to access the Twitter API.
 
 
