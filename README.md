@@ -146,7 +146,7 @@ The Archive Index (ARX) file contains metadata for each TAJ file to efficiently 
 * Chronological access to the entire archive can quickly be accomplished by navigating the ARX to find the appropriate TAJ before parsing tweets
 
 ### Tweet Archive JSON (TAJ) files
-Ornitholog stores tweets as JSON-objects, one-per-line. There are two varieties of file:
+Ornitholog stores tweets as JSON-objects, one-per-line in Tweet Archive JSON (TAJ) files. There are two varieties of TAJ file:
 
 Finished archives are named 'tweets-' + uuid4 + '.taj', where uuid4 is a unique hexadecimal identifier. Ornitholog does not need to edit these files anymore, and you can safely gzip them for long-term storage, or move them to another disk. (Be sure to move a copy of the ARX with them so that you can keep track of their ordering!) *Tweets in a finished file are ordered new-to-old.*  
 
