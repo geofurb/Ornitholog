@@ -96,14 +96,16 @@ venv.bak/
 .spyderproject
 .spyproject
 
+# PyCharm project settings
+.idea/
+
 # Rope project settings
 .ropeproject
 
 # mkdocs documentation
 /site
 
-# mypy
+# Project-specific miscellania
 .mypy_cache/
-.idea/
 src/__pycache__/
 test/
