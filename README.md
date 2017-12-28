@@ -11,27 +11,27 @@ Ornitholog
 ```
 
 ## Getting Started
+To start using Ornitholog, you're going to have to [create a set of credentials](https://github.com/geofurb/Ornitholog#set-up-twitter-api-credentials) for using the Twitter API, save these to a file that Ornitholog can read, [define a `Job`](https://github.com/geofurb/Ornitholog#create-a-job) JSON file to tell Ornitholog what you want it to collect and how, and finally [run the collection](https://github.com/geofurb/Ornitholog#run-ornitholog) itself. This quick intro will walk you through those steps to make the first time easier.
 
 ### Set up Twitter API credentials:
-Go to [https://apps.twitter.com], click `Create New App`
+Go to [apps.twitter.com](https://apps.twitter.com), click `Create New App`
 1. Create a text file in `Ornitholog/creds`, I'll refer to this as your `<creds_file>`
-2. Give your application a unique name, copy this to LINE 1 of your `<creds_file>`
+2. Give your application a unique name, copy this to `LINE 1` of your `<creds_file>`
 3. In the `Permissions` tab of your app, set the permissions to `Read-Only`; Ornitholog does not need write access.
-4. In the `Keys and Access Tokens` tab, now copy the `Consumer Key (API Key)` to LINE 2 of your `<creds_file>`
-5. In the `Keys and Access Tokens` tab, now copy the `Consumer Secret (API Secret)` to LINE 3 of your `<creds_file>`
+4. In the `Keys and Access Tokens` tab, now copy the `Consumer Key (API Key)` to `LINE 2` of your `<creds_file>`
+5. In the `Keys and Access Tokens` tab, now copy the `Consumer Secret (API Secret)` to `LINE 3` of your `<creds_file>`
 6. Under `Application Actions` in `Keys and Access Tokens`, click `Generate Consumer Key and Secret`
-7. In the `Keys and Access Tokens` tab, now copy the `Access Token` to LINE 4 of your `<creds_file>`
-8. In the `Keys and Access Tokens` tab, now copy the `Access Token Secret` to LINE 5 of your `<creds_file>`
+7. In the `Keys and Access Tokens` tab, now copy the `Access Token` to `LINE 4` of your `<creds_file>`
+8. In the `Keys and Access Tokens` tab, now copy the `Access Token Secret` to `LINE 5` of your `<creds_file>`
 * Remember to edit your job to contain the name of your `<creds_file>`!
 
 
-**Note:**  
-None of the keys or tokens should contain spaces or line-breaks!
+**Note:** None of the keys or tokens should contain spaces or line-breaks.
 
 
 
 ### Create a Job:
-A `Job` is a JSON file defining the parameters for a certain Twitter collection. Read the comments in `src/run_job.py` for full instructions on what you can do to define a job. For your convenience, a sample job has been included in `Ornitholog/jobs/sample_job.json`  
+A `Job` is a JSON file defining the parameters for a certain Twitter collection. Read the [Defining a Collection Job](https://github.com/geofurb/Ornitholog#defining-a-collection-job) section for full instructions on what you can do. For your convenience, a sample job has been included in `Ornitholog/jobs/sample_job.json`  
 
 In the `credfile` field, add the filename of your `<creds_file>`. Ornitholog will look for this file in `Ornitholog/creds/` when it tries to access the Twitter API.
 
@@ -56,14 +56,14 @@ List containing strings of case-insensitive search terms to be OR'd together. Wo
 	"change"
 ]
 ```
-Will collect any tweet that contains either word. If you want both words to appear, you would use:
+will collect any tweet that contains either word. If you only want tweets where both words appear, use:
 ```
 "keywords" : [
 	"+climate",
 	"+change"
 ]
 ```
-If you only want the exact phrase "climate change", you would use:
+If you only want the exact phrase "climate change", use:
 ```
 "keywords" : [
 	"climate change"
@@ -106,7 +106,11 @@ List of language-code strings to search, per Twitter API. If none are included, 
 ```
 "max_taj_size" : 400
 ```
-The (approximate) maximum size (MB) a single file of tweets can grow to before it is segmented. (Default: 400MB)
+The (approximate) maximum size (MB) a single file of tweets can grow to before it is segmented. (Default: 400MB) If you want to the entire archive in one, big file that can be accomplished using something like
+```
+"max_taj_size" : 999999999
+```
+but keep an eye on your disk usage, or Ornitholog might eat up every last bit!
 
 #### app_auth
 ```
@@ -118,7 +122,8 @@ Use application-only authentication to collect data. This nearly triples the rat
 ```
 "streaming_api" : false
 ``` 
-Use Twitter's Streaming API to collect tweets instead of the REST API. This is a *massively* powerful tool and can collect up to 1% of Twitter's entire volume, which means it will usually capture *all* traffic for a given query. It is important to remember, however, that *only one streaming endpoint can be opened concurrently per user account!* That means if the same user tries to open streaming endpoints from a second application, the first application's collection will be interrupted. (**Note:** This collection interface is not yet implemented.)
+Use Twitter's Streaming API to collect tweets instead of the REST API. This is a *massively* powerful tool and can collect up to 1% of Twitter's entire volume, which means it will usually capture *all* traffic for a given query. It is important to remember, however, that *only one streaming endpoint can be opened concurrently per user account!* That means if the same user tries to open streaming endpoints from a second application, the first application's collection will be interrupted.  
+**Note:** This collection interface is not yet implemented.
 
 
 ### Using the Ornitholog terminal
