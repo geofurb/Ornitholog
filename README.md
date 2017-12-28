@@ -106,7 +106,7 @@ List of language-code strings to search, per Twitter API. If none are included, 
 ```
 "max_taj_size" : 400
 ```
-The (approximate) maximum size (MB) a single file of tweets can grow to before it is segmented. (Default: 400MB) If you want to the entire archive in one, big file that can be accomplished using something like
+The (approximate) maximum size (MB) a single file of tweets can grow to before it is segmented. (Default: 400MB) If you want to the entire archive in one big file, that can be accomplished using something like
 ```
 "max_taj_size" : 999999999
 ```
@@ -126,10 +126,10 @@ Use Twitter's Streaming API to collect tweets instead of the REST API. This is a
 **Note:** This collection interface is not yet implemented.
 
 
-### Using the Ornitholog terminal
+## Using the Ornitholog terminal
 Once you've added your credentials to a file and created a `Job`, you're ready to run `Ornitholog.py`. After a brief startup sequence, this will land you at a command terminal. Here you can start and stop jobs, check on the status of your jobs, or politely ask Ornitholog to end collection and exit. The command `?` will bring up the help menu, which lists all available commands. Typing `help <cmd>` will give instructions for using a specific command.
 
-#### Job States
+### Job States
 In the Ornitholog terminal, you can type `status <job_name>` to check on a `Job`. It's probably `RUNNING` if you started it, `NOT_ACTIVE` if you haven't done anything with it, or `STOPPED` if you issued the `stop <job_name>` command. You might catch it in a transitional state such as `ISSUED` or `STOPPING`, which respectively indicate that the job is still preparing to collect data or that it is still in the process of ending its collection. If your `Job` is in a transitional state for more than a few seconds, something is probably wrong.
 
 ## Required Libraries
@@ -140,10 +140,12 @@ Ornitholog requires Python 3.6+ and the `rauth` library to run. If you don't hav
 Ornitholog creates a separate directory for each job, and stores tweets in that directory. You will find two kinds of files in this directory: `index.arx` and `*.taj` files.
 
 ### The Archive Index (ARX) File
-The Archive Index (ARX) file contains metadata for each TAJ file to efficiently keep track of what data is stored where. The benefits here are many-fold:
-* Tweets can be stored in individual chunks in case the archive grows too large for a single disk
-* Finished TAJ files can be compressed to save space, then decompressed later when you need to parse them
-* Chronological access to the entire archive can quickly be accomplished by navigating the ARX to find the appropriate TAJ before parsing tweets
+The Archive Index (ARX) file is always named `index.arx`, and contains metadata for each TAJ file to efficiently keep track of what data is stored where. The benefits here are many-fold:
+* Tweets can be stored in individual chunks in case the archive grows too large for a single disk  
+* Finished TAJ files can be compressed to save space, then individually decompressed later when you need to parse them  
+* Chronological access to the entire archive can quickly be accomplished by navigating the ARX to find the appropriate TAJ before parsing tweets  
+
+**Note:** For disk efficiency and chronological searching, Ornitholog's archive format is superb. However, its design makes it very tedious to further refine a query's search terms after collection, so it may be advisable to import the data into another format and index it for searching by keyword depending on your use-case.
 
 ### Tweet Archive JSON (TAJ) files
 Ornitholog stores tweets as JSON-objects, one-per-line in Tweet Archive JSON (TAJ) files. There are two varieties of TAJ file:
