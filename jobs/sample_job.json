@@ -1,0 +1,25 @@
+{
+  
+  "keywords":[
+	"climate change",
+	"climatechange",
+	"global warming",
+	"globalwarming"
+  ],
+  
+  "langs":[
+	"en"
+  ],
+  
+  "path":"data/sample_job",
+  
+  "max_taj_size":400,
+  
+  "credfile":"test_creds.txt",
+  
+  "app_auth":true,
+  
+  "streaming_api":false
+  
+}
+
