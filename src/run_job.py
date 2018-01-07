@@ -1,5 +1,6 @@
 import rest_collector
 from arx_mgr import load_arx
+from twitter_api_interface import oauth2
 import json
 
 from enum import Enum
@@ -38,7 +39,10 @@ def load_secrets(job):
             'token_key':credlines[3],
             'token_secret':credlines[4]
         }
-
+        
+        if job['app_auth']:
+            job['creds']['bearer_token'] = oauth2(job['creds'])[1]
+            
 def collection_job(job_id, dispatcher,verbose=False):
     """
     Load the collection parameters from jobs/<job_id>.json and begin collection.

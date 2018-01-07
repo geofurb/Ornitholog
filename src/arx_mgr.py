@@ -95,7 +95,69 @@ def write_arx(job):
     arx_path = job['path'] + '/index.arx'
     with open(arx_path,'w+') as fout:
         json.dump(arx, fout, indent=4, sort_keys=True)
-        
+
+
+def findTAJbounds(taj_file, finished_file=True):
+    """
+    Scan the TAJ file from either end to determine when it begins and ends. This file could be hundreds of gigabytes
+    long depending on the collection parameters, so we'll scan from the beginning and the end, rather than reading
+    straight through the entire thing.
+    :param taj_file: Path to the TAJ file we wish to parameterize
+    :param finished_file: True if the first line of the file contains the oldest tweet
+    :return: min_id, max_id, min_date, max_date
+    """
+    old_to_new = finished_file
+    min_date = None; max_date = None
+    min_id = None; max_id = None
+    
+    # Feed forward
+    with open(taj_file) as taj:
+        for line in taj:
+            tweet = json.loads(line)
+            
+            # Get date and ID bounds from the top of the file
+            if old_to_new:
+                if min_date is None or min_id is None:
+                    if min_date is None:
+                        min_date = tweet_parser.getDate(tweet)
+                    if min_id is None:
+                        min_id = tweet_parser.getTweetID(tweet)
+                else:
+                    break
+            else:
+                if max_date is None or max_id is None:
+                    if max_date is None:
+                        max_date = tweet_parser.getDate(tweet)
+                    if max_id is None:
+                        max_id = tweet_parser.getTweetID(tweet)
+                else:
+                    break
+                    
+    # Feed in reverse
+    with open(taj_file) as taj:
+        for line in enildaer(taj):
+            tweet = json.loads(line)
+            
+            # Get date and ID bounds from the bottom of the file
+            if not old_to_new:
+                if min_date is None or min_id is None:
+                    if min_date is None:
+                        min_date = tweet_parser.getDate(tweet)
+                    if min_id is None:
+                        min_id = tweet_parser.getTweetID(tweet)
+                else:
+                    break
+            else:
+                if max_date is None or max_id is None:
+                    if max_date is None:
+                        max_date = tweet_parser.getDate(tweet)
+                    if max_id is None:
+                        max_id = tweet_parser.getTweetID(tweet)
+                else:
+                    break
+    # Return bounds
+    return min_id, max_id, min_date, max_date
+
 def append_finished_file(job):
     """
     Create a new "finished" file at the end of the ARX's list of finished TAJ (tweet archive json) files
@@ -135,7 +197,7 @@ def finalize_taj(job):
     elif os.path.getsize(path+'/'+arx['finished'][-1][0]) > (job['max_taj_size']*1024*1024):
         append_finished_file(job)
         
-        
+    
     # Copy old-to-new tweets from unfinished file to new-to-old ordering for finished file.
     copybuffer = []
     with open(path+arx['unfinished'][0]) as fin, open(path+arx['finished'][-1][0],'a+') as fout:
@@ -153,30 +215,38 @@ def finalize_taj(job):
         
         # Iterate through the finished file to get the last tweet ID
         last_id = None  ## TODO: Debug cases where this might not get set.
+        last_time = None
         for line in ffin:
             line = line.strip()
             if line:
-                try:
-                    last_id = tweet_parser.getTweetID(json.loads(line))
-                    break
+                try :
+                    tweet = json.loads(line)
+                    if last_id is None: last_id = tweet_parser.getTweetID(tweet)
+                    if last_time is None: last_time = tweet_parser.getDate(tweet)
                 except ValueError:
-                    continue
-            if last_id is not None : break
+                    pass
+            if last_id is not None and last_time is not None: break
         arx['finished'][-1][2] = last_id
+        arx['finished'][-1][4] = last_time
         
         # Iterate through the unfinished file to get the first tweet ID, if necessary
         if len(arx['finished']) == 1:
             first_id = None
+            first_time = None
             for line in funfin:
                 line = line.strip()
                 if line:
                     try:
-                        first_id = tweet_parser.getTweetID(json.loads(line))
-                        break
+                        tweet = json.loads(line)
+                        if first_id is None: first_id = tweet_parser.getTweetID(tweet)
+                        if first_time is None: first_time = tweet_parser.getDate(tweet)
                     except ValueError:
                         continue
+                if first_id is not None and first_time is not None: break
             arx['finished'][-1][1] = first_id-1
-    arx['finished'][-1][5] = arx['unfinished'][5]
+            arx['finished'][-1][3] = first_time
+        
+    arx['finished'][-1][5] = arx['unfinished'][5]   # The number of tweets didn't change
 
 def append_current_tweets(job, tweets):
     """
@@ -231,31 +301,37 @@ def append_current_tweets(job, tweets):
         
         # Iterate through the unfinished file to get the last tweet ID
         last_id = None  ## TODO: Debug cases where this might not get set.
+        last_time = None
         for line in enildaer(funfin):
             line = line.strip()
             if line:
                 try:
-                    last_id = tweet_parser.getTweetID(json.loads(line))
-                    break
+                    tweet = json.loads(line)
+                    last_id = tweet_parser.getTweetID(tweet)
+                    last_time = tweet_parser.getDate(tweet)
                 except ValueError:
                     continue
-            if last_id is not None : break
+            if last_id is not None and last_time is not None: break
         arx['unfinished'][2] = last_id
+        arx['unfinished'][4] = last_time
     
     # Iterate through the unfinished file to get the first tweet ID if it hasn't been set yet
     with open(path + arx['unfinished'][0]) as funfin :
         if arx['unfinished'][1] is None:
             first_id = None
+            first_time = None
             for line in funfin:
                 line = line.strip()
                 if line:
                     try:
-                        first_id = tweet_parser.getTweetID(json.loads(line))
-                        break
+                        tweet = json.loads(line)
+                        first_id = tweet_parser.getTweetID(tweet)
+                        first_time = tweet_parser.getDate(tweet)
                     except ValueError:
                         continue
-                if first_id is not None: break
+                if first_id is not None and first_time is not None: break
             arx['unfinished'][1] = first_id
+            arx['unfinished'][3] = first_time
     
     # Commit our updated archive index to disk
     write_arx(job)

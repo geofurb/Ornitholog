@@ -64,7 +64,8 @@ def generateAppSession(creds, gzip=True, verbose=False) :
     Generate an application-only session for Twitter 
     """
     # Load bearer token
-    user_agent_string, bearer_token = oauth2(creds)
+    user_agent_string = creds['application_name']
+    bearer_token = creds['bearer_token']
     
     # Generate session
     sess = requests.Session()

@@ -131,7 +131,7 @@ def collectTweetBatch(job, sample_evenness=450.0, verbose=False):
     else:
         MAX_QUERIES = 180.0
     if sample_evenness > MAX_QUERIES : sample_evenness = MAX_QUERIES
-    time_alloc = 15.0 * 60.0 / sample_evenness
+    time_alloc = 15.05 * 60.0 / sample_evenness
     NUM_QUERIES = round(MAX_QUERIES / sample_evenness)
     
     # Begin cycle
