@@ -102,9 +102,11 @@ def findTAJbounds(taj_file, finished_file=True):
     Scan the TAJ file from either end to determine when it begins and ends. This file could be hundreds of gigabytes
     long depending on the collection parameters, so we'll scan from the beginning and the end, rather than reading
     straight through the entire thing.
+    
+    Note: This function returns datetime objects for timestamps, not strings!
     :param taj_file: Path to the TAJ file we wish to parameterize
     :param finished_file: True if the first line of the file contains the oldest tweet
-    :return: min_id, max_id, min_date, max_date
+    :return: min_id, max_id, min_timestamp, max_timestamp
     """
     old_to_new = finished_file
     min_date = None; max_date = None
@@ -119,7 +121,7 @@ def findTAJbounds(taj_file, finished_file=True):
             if old_to_new:
                 if min_date is None or min_id is None:
                     if min_date is None:
-                        min_date = tweet_parser.getDate(tweet)
+                        min_date = tweet_parser.getTimeStamp(tweet)
                     if min_id is None:
                         min_id = tweet_parser.getTweetID(tweet)
                 else:
@@ -127,7 +129,7 @@ def findTAJbounds(taj_file, finished_file=True):
             else:
                 if max_date is None or max_id is None:
                     if max_date is None:
-                        max_date = tweet_parser.getDate(tweet)
+                        max_date = tweet_parser.getTimeStamp(tweet)
                     if max_id is None:
                         max_id = tweet_parser.getTweetID(tweet)
                 else:
