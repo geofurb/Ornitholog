@@ -18,7 +18,7 @@ Ornitholog
 * [The Archive Format](https://github.com/geofurb/Ornitholog#the-archive-format)  
 
 ## Required Libraries
-Ornitholog requires Python 3.6+ and the `rauth` library to run. If you don't have `rauth`, you can acquire it by running `python -m pip install rauth` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
+Ornitholog requires Python 3.6+ with the `rauth` and `pytz` libraries to run. If you don't have `rauth` or `pytz`, you can acquire it by running `python -m pip install rauth` and `python -m pip install pytz` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
 
 ## Getting Started
 To start using Ornitholog, you're going to have to [create a set of credentials](https://github.com/geofurb/Ornitholog#set-up-twitter-api-credentials) for using the Twitter API, save these to a file that Ornitholog can read, [define a `Job`](https://github.com/geofurb/Ornitholog#create-a-job) JSON file to tell Ornitholog what you want it to collect and how, and finally [run the collection](https://github.com/geofurb/Ornitholog#run-ornitholog) itself. This quick intro will walk you through those steps to make the first time easier.
