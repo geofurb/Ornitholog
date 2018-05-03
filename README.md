@@ -20,7 +20,7 @@ Ornitholog
 ## Support
 This is a personal project created in hopes of aiding researchers to collect and store data for free using the Twitter API. It was created because other tools and libraries do provide the raw JSON for tweets, are not stable enough to run uninterrupted for weeks/months at a time, or are available only as paid services. Ornitholog has a wonderful tool in my research and hopefully it will be similarly useful in yours.  
 
-This utility is and will always be completely free, but you're welcome to cite this tool in your research or donate if it's helped you.  
+This utility is and will always be completely free, but you're welcome to cite this tool in your research or donate to buy me candy and hardware if it's helped you:  
 [Donate with PayPal](paypal.me/geofurb)  
 Donate in Ethereum: 0x6596dE714479dF64B6E2146575D35C0C0E1E57B3  
 
