@@ -17,6 +17,11 @@ Ornitholog
 * [Using the Ornitholog terminal](https://github.com/geofurb/Ornitholog#using-the-ornitholog-terminal)  
 * [The Archive Format](https://github.com/geofurb/Ornitholog#the-archive-format)  
 
+## Support
+This is a personal project created in hopes of aiding researchers to collect and store data for free using the Twitter API. It was created because other tools and libraries do provide the raw JSON for tweets, are not stable enough to run uninterrupted for weeks/months at a time, or are available only as paid services. Ornitholog has a wonderful tool in my research and hopefully it will be similarly useful in yours.  
+[Donate with PayPal](paypal.me/geofurb)  
+Donate in Ethereum: 0x6596dE714479dF64B6E2146575D35C0C0E1E57B3  
+
 ## Required Libraries
 Ornitholog requires Python 3.6+ with the `rauth` and `pytz` libraries to run. If you don't have `rauth` or `pytz`, you can acquire it by running `python -m pip install rauth` and `python -m pip install pytz` from the system shell. Additional dependencies may become necessary as development continues and additional features are added. (For instance, to export user-interaction graphs to gephi or import information to a SQL database.)
 
