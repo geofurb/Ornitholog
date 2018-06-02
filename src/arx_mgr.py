@@ -1,5 +1,6 @@
 import json
-import os
+import os, time
+from pathlib import Path
 from uuid import uuid4
 import tweet_parser
 
@@ -299,3 +300,137 @@ def get_prepend_bounds(job):
         return None, max_id
     else :
         return None, None
+
+def iter_tweetfile(tweetfile, min_id=None, max_id=None, min_date=None, max_date=None, reverse=False):
+    """
+    
+    :param tweetfile: File containing JSON tweets, one per line 
+    :param min_id: Skip tweets with IDs lower than this
+    :param max_id: Skip tweets with IDs higher than this
+    :param min_date: Skip tweets before this POSIX timestamp
+    :param max_date: Skip tweets after this POSIX timestamp
+    :param reverse: Read the file backwards
+    :return: Generator over tweet objects in the file
+    """
+    if min_id is None: min_id = -1
+    if max_id is None: max_id = float('inf')
+    if min_date is None: min_date = -1
+    if max_date is None: max_date = float('inf')
+    
+    with open(tweetfile) as fin:
+        if reverse: fin = enildaer(fin)
+        for line in fin:
+            line = line.strip()
+            if line:
+                try:
+                    tweet = json.loads(line)
+                    if (min_id <= tweet_parser.getTweetID(tweet) <= max_id) and \
+                            (min_date <= time.mktime(tweet_parser.getTimeStamp(tweet).timetuple()) <= max_date) :
+                        yield tweet
+                except:
+                    continue
+                
+def check_bounds(arx_entry, min_id=None, max_id=None, min_date=None, max_date=None):
+    """
+    Return True if the ARX entry's bounds overlap the constraints or False if there can be no
+    tweets within the given constraints
+    :param arx_entry: ARX tuple (filename, min_id, max_id, min_date, max_date, num_tweets)
+    :param min_id: Minimum tweet ID
+    :param max_id: Maximum tweet ID
+    :param min_date: Minimum date (POSIX timestamp)
+    :param max_date: Maximum date (POSIX timestamp)
+    :return: True if the tweet file intersects the period defined by the supplied constraints
+    """
+    fstart_date = time.mktime(tweet_parser.read_timestamp(arx_entry[3]).timetuple())
+    fstop_date = time.mktime(tweet_parser.read_timestamp(arx_entry[4]).timetuple())
+    if (min_id is not None and arx_entry[2] < min_id) or \
+        (max_id is not None and arx_entry[1] > max_id) or \
+        (min_date > fstop_date) or (max_date < fstart_date):
+        return False
+    return True
+    
+def scan_tweets(job, min_id=None, max_id=None, min_date=None, max_date=None, reverse=False):
+    """
+    Generator for iterating through a Tweet archive, one JSON object at a time.
+    :param job: Dictionary with a path to an archive index OR a tweet file with one JSON object per line
+    can also supply a file handle directly to the tweets.
+    :param min_id: Minimum tweet ID; tweets will be skipped if their ID is less
+    than this value.
+    :param max_id: Maximum tweet ID; tweets will be skipped if their ID is more
+    than this value. 
+    :param min_date: Minimum date (POSIX timestamp)
+    :param max_date: Maximum date (POSIX timestamp)
+    :param reverse: Read tweets new-to-old instead of old-to-new
+    :return: Iterator over tweet objects.
+    """
+    
+    if min_date is None: min_date = -1
+    if max_date is None: max_date = float('inf')
+    
+    # If arx is a dict, we're reading an archive with an index
+    if type(job) is dict:
+        arx = load_arx(job)
+        # Read unfinished file first if going backwards
+        if reverse:
+            if arx['unfinished'] is not None:
+                ufinfile = arx['unfinished']
+                # Skip files outside ID/date bounds
+                try :
+                    unfin_out_of_bounds = not check_bounds(ufinfile, min_id, max_id, min_date, max_date)
+                except :  # In case a bound was included improperly in the ARX, just check through the whole file
+                    unfin_out_of_bounds = False
+                if not unfin_out_of_bounds:
+                    # Relative path correction
+                    ufinfile[0] = Path(job['path']).joinpath(Path(ufinfile[0]))
+                    # Iterate through tweets
+                    for tweet in iter_tweetfile(arx['unfinished'][0], min_id, max_id, min_date, max_date, reverse):
+                        yield tweet
+
+        # Read finished files
+        if arx['finished'] is not None and len(arx['finished']) > 0:
+            
+            # Allow the tweets to be read new-to-old or old-to-new
+            if reverse:
+                fin_files = reversed(arx['finished'])
+            else:
+                fin_files = arx['finished']
+            
+            for finfile in fin_files:
+                
+                # Check bounds to avoid iterating through files unnecessarily
+                try :
+                    if not check_bounds(finfile, min_id, max_id, min_date, max_date):
+                        continue
+                except: # In case a bound was included improperly in the ARX, just check through the whole file
+                    pass
+                
+                # Relative path correction
+                finfile[0] = Path(job['path']).joinpath(Path(finfile[0]))
+                
+                # Iterate through tweets in the file
+                for tweet in iter_tweetfile(finfile[0], min_id, max_id, min_date, max_date, reverse):
+                    yield tweet
+                                
+        # Read unfinished file last if going old-to-new
+        if not reverse:
+            if arx['unfinished'] is not None:
+                ufinfile = arx['unfinished']
+                
+                # Skip files outside ID/date bounds
+                try:
+                    unfin_out_of_bounds = not check_bounds(ufinfile, min_id, max_id, min_date, max_date)
+                except:  # In case a bound was included improperly in the ARX, just check through the whole file
+                    unfin_out_of_bounds = False
+                    
+                if not unfin_out_of_bounds:
+                    # Relative path correction
+                    ufinfile[0] = Path(job['path']).joinpath(Path(ufinfile[0]))
+                    # Iterate through tweets
+                    for tweet in iter_tweetfile(arx['unfinished'][0], min_id, max_id, min_date, max_date, reverse):
+                        yield tweet
+                                    
+    # Reading a single file, not an ARX
+    else:
+        for tweet in iter_tweetfile(job, min_id, max_id, min_date, max_date, reverse):
+            yield tweet
+    

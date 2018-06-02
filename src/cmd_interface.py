@@ -1,8 +1,17 @@
 import cmd
 import time, sys
 import threading
+import json
+from arx_mgr import scan_tweets
 from run_job import Job
 from job_mgr import Dispatcher
+
+# Import NetworkX if available, for user interaction graph export
+try:
+    import networkx as nx
+    import twitter_graph
+except:
+    nx = None
 
 class TestCmd(cmd.Cmd):
     
@@ -15,6 +24,7 @@ class TestCmd(cmd.Cmd):
         kwargs.setdefault('stdin', None)
         kwargs.setdefault('stdout', None)
         super(TestCmd, self).__init__(completekey='tab', **kwargs)
+        
     
     def do_quit(self, arg):
         if len(self.dispatcher.getActiveJobs()) > 0:
@@ -88,6 +98,137 @@ class TestCmd(cmd.Cmd):
     def help_delete(self):
         print('The functionality to remove inactive jobs from the list is not yet complete.')
     
+    def do_exportgraph(self, arg):
+        
+        # Make sure the user has NetworkX installed
+        if nx is None:
+            print('NetworkX library is required for this feature.')
+            return
+        
+        # Initialize filename and flags to default values
+        job = None; single_file = False; outfile = None
+        min_id = None; max_id = None
+        min_date = None; max_date = None
+        undirected = False; multigraph = False
+        replies = True; repl_explicit = False
+        mentions = False; retweets = False; quotes = False
+        
+        # Scan filename and flags from the user input
+        try:
+            params = arg.strip()
+            
+            # Get the job or filename
+            if params[0] == '"':
+                end = params.find('"',start=1)+1
+                job = params[:end]
+            elif params[0] == "'":
+                end = params.find("'",start=1)+1
+                job = params[:end]
+            else:
+                job = params.split()[0]
+            params = params[len(job):].strip()  # Remove the file/job name
+
+            # Get the output filename
+            if len(params) > 0 and params[0] != '-':
+                if params[0] == '"' :
+                    end = params.find('"', start=1) + 1
+                    outfile = params[:end]
+                elif params[0] == "'" :
+                    end = params.find("'", start=1) + 1
+                    outfile = params[:end]
+                else :
+                    outfile = params.split()[0]
+                params = params[len(outfile):]  # Remove the output filename
+            else:
+                outfile = 'data/graph.gml'
+                params = ' ' + params
+
+            # Get the flags
+            flags = params.split(' -')      # Split the remaining string into flags
+            flags.pop(0)                    # Pop the leading empty string from the list of flags
+            for flag in flags:              # Iterate through flags
+                # Check multi-character flags
+                if flag[0] == '-' and len(flag) > 1:
+                    flag = flag[1:]
+                    if flag.lower() == 'singlefile':
+                        single_file = True
+                    elif flag.split()[0].lower() == 'date':
+                        bounds = flag.split()[1].split(':')
+                        try:
+                            min_date = int(bounds[0])
+                        except:
+                            pass
+                        try:
+                            max_date = int(bounds[1])
+                        except:
+                            pass
+                    elif flag.split()[0].lower() == 'index':
+                        bounds = flag.split()[1].split(':')
+                        try :
+                            min_id = int(bounds[0])
+                        except :
+                            pass
+                        try :
+                            max_id = int(bounds[1])
+                        except :
+                            pass
+                # Check single-character flags
+                else:
+                    if 'U' in flag: undirected = True
+                    if 'M' in flag: multigraph = True
+                    if 'r' in flag: repl_explicit = True
+                    if 'm' in flag: mentions = True
+                    if 't' in flag: retweets = True
+                    if 'q' in flag: quotes = True
+                    
+            # Check if user didn't want replies included
+            if (mentions or retweets or quotes) and not repl_explicit: replies = False
+            
+        except:
+            print('Syntax error in exportgraph request; check your entry.')
+            raise
+        
+        try:
+            if len(job) > 4 and job[-4:].lower() == '.arx' and '/' in job:
+                job = {'path':job[0:job.rfind('/')]}
+            elif len(job) > 4 and job[-4:].lower() == '.arx' and '\\' in job:
+                job = {'path':job[0:job.rfind('\\')]}
+            elif not single_file:
+                with open('jobs/' + job + '.json') as jobfile :
+                    job = json.load(jobfile)
+        except:
+            print('Unable to load specified job!')
+            return
+        
+        # Iterate through tweets to build the graph
+        tweetgen = scan_tweets(job, min_id, max_id, min_date, max_date)
+        graph = twitter_graph.build_graph(tweetgen, not undirected, multigraph, replies, mentions, retweets, quotes)
+        
+        # Write the graph to file
+        nx.write_gml(graph, outfile)
+    def help_exportgraph(self):
+        print('Build and export the user interaction graph of a specified job or index.arx'+
+              '\nfile. If no output file is specified, the graph is saved to data/graph.gml.'+
+              '\nSyntax:'+
+              '\nexportgraph <jobname> <output file> [options]'+
+              '\n\nAlternatively, any file containing one tweet JSON object per line can be'+
+              '\nused with the "--singlefile" option.'+
+              '\n\nSpecify the parameters for creating the graph using:'+
+              '\n\t--index min:max\t to specify a minimum and maximum tweet ID when building'+
+              '\n\t\t\t\t\t the graph (omit a min or max bound to include all tweets'+
+              '\n\t\t\t\t\t before/after that index)'+
+              '\n\t--date min:max\t to specify a minimum and maximum (local) POSIX time for'+
+              '\n\t\t\t\t\t tweets to be included (omit a min or max bound to include'+
+              '\n\t\t\t\t\t all tweets before/after that date)'+
+              '\n\t-U\t to generate an undirected graph'+
+              '\n\t-M\t to generate one edge per interaction instead of weighting edges by the'+
+              '\n\t\t # of repeated interactions'+
+              '\n\t-r\t to include Replies in user interactions (this is the default if no'+
+              '\n\t\t other option is specified)'+
+              '\n\t-m\t to include mentions in user interactions'+
+              '\n\t-t\t to include reTweets in user interactions'+
+              '\n\t-q\t to include quoted tweets in user interactions.'+
+              '\n\nExample:\nexportgraph "C:\\Twitter Data\\tweets.json" C:\\tweetgraph.gml --singlefile --date\n 1525132800: -rmU\n')
 
 class Commander(threading.Thread):
     """
