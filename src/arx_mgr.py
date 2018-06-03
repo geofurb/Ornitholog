@@ -317,7 +317,7 @@ def iter_tweetfile(tweetfile, min_id=None, max_id=None, min_date=None, max_date=
     if min_date is None: min_date = -1
     if max_date is None: max_date = float('inf')
     
-    with open(tweetfile) as fin:
+    with open(tweetfile, errors="ignore") as fin:
         if reverse: fin = enildaer(fin)
         for line in fin:
             line = line.strip()
