@@ -57,7 +57,7 @@ class TestCmd(cmd.Cmd):
             self.dispatcher.pushRequest(arg)
     def help_start(self):
         print('Start a collection job defined by the supplied job file.\n'
-              'ex: \'start my_job\' to start the job file jobs/my_job.txt\n'
+              'ex: \'start my_job\' to start the job file jobs/my_job.json\n'
               'Use \'start --all\' to automatically execute all jobs in /jobs')
     
     def do_stop(self, arg):
@@ -86,7 +86,7 @@ class TestCmd(cmd.Cmd):
             print(arg,'is',self.dispatcher.getJobStatus(arg).name)
     def help_status(self):
         print('Return the status of an active job.\n'
-              'ex: \'status my_job\' to check on the job defined in jobs/my_job.txt')
+              'ex: \'status my_job\' to check on the job defined in jobs/my_job.json')
         
     def do_list(self, arg):
         print('Not yet implemented.')
