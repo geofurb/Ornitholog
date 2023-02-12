@@ -1,6 +1,8 @@
 # Ornitholog
 Twitter data acquisition and archiving tool
 
+This tool is likely of little to no use at present, as Twitter is moving to paid API access and making requests very expensive. However, if it is still something you wish to use, I hope that it serves you well.
+
 ```
 Ornitholog
   /creds
@@ -21,9 +23,7 @@ Ornitholog
 ## Support
 This is a personal project created in hopes of aiding researchers to collect and store data for free using the Twitter API. It was created because other tools and libraries do provide the raw JSON for tweets, are not stable enough to run uninterrupted for weeks/months at a time, or are available only as paid services. Ornitholog has a wonderful tool in my research and hopefully it will be similarly useful in yours.  
 
-This utility is and will always be completely free, but you're welcome to cite this tool in your research or donate to buy me candy and hardware if it's helped you:  
-[Donate with PayPal](https://paypal.me/geofurb)  
-Donate in Ethereum: 0x6596dE714479dF64B6E2146575D35C0C0E1E57B3  
+This utility is and will always be completely free, but you're welcome to cite this tool in your research or contribute a bug report:  
 [Donate a Bug Report](https://github.com/geofurb/Ornitholog/issues)
 
 ## Required Libraries
